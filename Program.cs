@@ -3,24 +3,26 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-var serv = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+using var serv = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 serv.Bind(IPEndPoint.Parse(args[0]));
 
 _ = Task.Run(() =>
 {
     try
     {
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[1280];
         while (true)
         {
             EndPoint e = new IPEndPoint(IPAddress.Any, 0);
             int received = serv.ReceiveFrom(buf, ref e);
-            Console.WriteLine($"RECV {received} bytes from {e}: {Encoding.UTF8.GetString(buf.AsSpan(0, received))}");
+            Console.WriteLine($"RECV {received} bytes from {e}: {Convert.ToHexStringLower(buf.AsSpan(0, received))}");
             IPEndPoint ee = (IPEndPoint)e;
             byte[] send = new byte[32];
             ee.Address.MapToIPv4().GetAddressBytes().CopyTo(send, 0);
             BinaryPrimitives.WriteUInt16BigEndian(send.AsSpan(4, 2), (ushort)ee.Port);
             serv.SendTo(send, e);
+            Console.WriteLine($"SENT {received} bytes from {e}: {Convert.ToHexStringLower(send)}");
+
         }
     }
     catch (Exception e)
@@ -39,3 +41,6 @@ if (args is { Length: 2 })
 }
 
 Console.ReadLine();
+Console.WriteLine("EXIT");
+
+serv.Disconnect(false);
