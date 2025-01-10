@@ -3,8 +3,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-using var serv = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-serv.Bind(IPEndPoint.Parse(args[0]));
+using Socket serv = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+IPEndPoint addr = IPEndPoint.Parse(args[0]);
+serv.Bind(addr);
+Console.WriteLine($"LIST addr={IPEndPoint.Parse(args[0])}");
 
 _ = Task.Run(() =>
 {
